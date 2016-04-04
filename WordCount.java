@@ -23,10 +23,8 @@ public class WordCount {
 	 * 
 	 * @param a the string key specified by the user that represents a data structure
 	 */
-	public WordCount(String dataStructure, String sort)
+	public WordCount(String dataStructure, String sortingMethod)
 	{
-		this.sort = sort;
-
 		// Passing first parameter input to create the corresponding data structure
 
 		// Selected binary search tree
@@ -56,18 +54,15 @@ public class WordCount {
 
 		// Passing second parameter input to use the corresponding sorting method
 
-		/**Selected insertion sort
-		if (sort.compareTo("-is") == 0) {
-
+		if (sort.compareTo("-is") == 0 || sort.compareTo("-qs") == 0 || sort.compareTo("-ms") == 0)
+		{
+			sort = sortingMethod;
 		}
-		// Selected quicksort
-		else if (sort.compareTo("-qs") == 0) {
-
+		else 
+		{
+			System.err.println("\tSaw "+ sortingMethod +" instead of -is -qs -ms as first argument");
+			System.exit(1);	
 		}
-		// Selected mergesort
-		else if (sort.compareTo("-ms") == 0) {
-
-		}**/
 	}
 
 	/**
