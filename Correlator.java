@@ -16,35 +16,54 @@ import java.io.IOException;
 
 public class Correlator {
 	private static DataCounter<String> counter;
+	private static String sort;
 
 	/**
 	 * Constructs a correlator with the data structure specified by the user
 	 * 
 	 * @param a the string key specified by the user that represents a data structure
 	 */
-	public Correlator(String a)
+	public Correlator(String dataStructure, String sortingMethod)
 	{
-		if(a.compareTo("-b")==0)
+		// Passing first parameter input to create the corresponding data structure
+
+		// Selected binary search tree
+		if(dataStructure.compareTo("-b")==0)
 		{
 			BinarySearchTree bst = new BinarySearchTree();
 			counter = (DataCounter<String>)(bst);
 			System.out.println("BST");
 
 		}
-		else if(a.compareTo("-a")==0)
+		// Selected AVL tree
+		else if(dataStructure.compareTo("-a")==0)
 		{
 			AvlTree avl = new AvlTree();
 			counter = (DataCounter<String>)(avl);
 			System.out.println("AVL");
 		}
-		else if(a.compareTo("-h")==0)
+		// Selected hashtable
+		else if(dataStructure.compareTo("-h")==0)
 		{
 			counter = new HashTable(100);
 			System.out.println("HashTable");
 		}
 		else {
-			System.err.println("\tSaw "+ a +" instead of -b -a -h as first argument");
+			System.err.println("\tSaw "+ dataStructure +" instead of -b -a -h as first argument");
 			System.exit(1);
+		}
+
+
+		// Passing second parameter input to use the corresponding sorting method
+
+		if (sort.compareTo("-is") == 0 || sort.compareTo("-qs") == 0 || sort.compareTo("-ms") == 0)
+		{
+			sort = sortingMethod;
+		}
+		else 
+		{
+			System.err.println("\tSaw "+ sortingMethod +" instead of -is -qs -ms as first argument");
+			System.exit(1);	
 		}
 	}
 
@@ -134,46 +153,68 @@ public class Correlator {
 	 */
 	private static <E extends Comparable<? super E>> void sortByDescendingCount(
 			DataCount<E>[] counts) {
-		for (int i = 1; i < counts.length; i++) {
-			DataCount<E> x = counts[i];
-			int j;
-			for (j = i - 1; j >= 0; j--) {
-				if (counts[j] != null && x != null)
-				{
-					if (counts[j].count >= x.count) {
-						break;
+
+		if (sort.compareTo("-is") == 0)
+		{
+			for (int i = 1; i < counts.length; i++) {
+				DataCount<E> x = counts[i];
+				int j;
+				for (j = i - 1; j >= 0; j--) {
+					if (counts[j] != null && x != null)
+					{
+						if (counts[j].count >= x.count) {
+							break;
+						}
 					}
+					counts[j + 1] = counts[j];
 				}
-				counts[j + 1] = counts[j];
+				counts[j + 1] = x;
 			}
-			counts[j + 1] = x;
+		}
+		else if (sort.compareTo("-qs") == 0)
+		{
+			quickSort(counts);
+		}
+		else if (sort.compareTo("-ms") == 0)
+		{
+			mergeSort(counts);
 		}
 	}
 
-	/**
-	 * The main class that takes in 3 user arguments, a specific data structure, file 1, and file 2
-	 * The possible data structures are Binary Search Tree, -b, AVL tree, -a, and
-	 * Hash Table, -h
-	 * Prints the total words of each of the files and the difference metric
-	 * 
-	 * For the difference metric calculation, 
-	 * the lowest value is 0, with the files being identical
-	 * Values such as 30, can relate to the two files being very similar
-	 */
-	@SuppressWarnings("unused")
-	public static void main(String[] args) {
+	private static <E extends Comparable<? super E>> void quickSort(DataCount<E>[] counts)
+	{
 
-		Correlator corr = new Correlator(args[0]);
-		String fileName1 = args[1];
-		DataCount<String>[] file1 = corr.calculateFrequencies(fileName1);
-		System.out.println("The total words: " + corr.totalWords(file1));
-
-		Correlator corr2 = new Correlator(args[0]);
-		String fileName2 = args[2];
-		DataCount<String>[] file2 = corr2.calculateFrequencies(fileName2);
-		System.out.println("The total words: " + corr2.totalWords(file2));
-
-		System.out.println("The difference metric is " + corr.differenceMetric(file1, file2));
 	}
+	private static <E extends Comparable<? super E>> void mergeSort(DataCount<E>[] counts) 
+	{
+
+	}
+
+
+/**
+ * The main class that takes in 3 user arguments, a specific data structure, file 1, and file 2
+ * The possible data structures are Binary Search Tree, -b, AVL tree, -a, and
+ * Hash Table, -h
+ * Prints the total words of each of the files and the difference metric
+ * 
+ * For the difference metric calculation, 
+ * the lowest value is 0, with the files being identical
+ * Values such as 30, can relate to the two files being very similar
+ */
+@SuppressWarnings("unused")
+public static void main(String[] args) {
+
+	Correlator corr = new Correlator(args[0], args[1]);
+	String fileName1 = args[2];
+	DataCount<String>[] file1 = corr.calculateFrequencies(fileName1);
+	System.out.println("The total words: " + corr.totalWords(file1));
+
+	Correlator corr2 = new Correlator(args[0], args[1]);
+	String fileName2 = args[3];
+	DataCount<String>[] file2 = corr2.calculateFrequencies(fileName2);
+	System.out.println("The total words: " + corr2.totalWords(file2));
+
+	System.out.println("The difference metric is " + corr.differenceMetric(file1, file2));
+}
 
 }
