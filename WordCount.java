@@ -12,6 +12,7 @@
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Comparator;
 @SuppressWarnings("unchecked")
 
 public class WordCount {
@@ -54,7 +55,7 @@ public class WordCount {
 
 		// Passing second parameter input to use the corresponding sorting method
 
-		if (sort.compareTo("-is") == 0 || sort.compareTo("-qs") == 0 || sort.compareTo("-ms") == 0)
+		if (sortingMethod.compareTo("-is") == 0 || sortingMethod.compareTo("-qs") == 0 || sortingMethod.compareTo("-ms") == 0)
 		{
 			sort = sortingMethod;
 		}
@@ -87,6 +88,7 @@ public class WordCount {
 			System.exit(1);
 		}
 		DataCount<String>[] counts = counter.getCounts();
+
 		sortByDescendingCount(counts);
 		for (DataCount<String> c : counts)
 		{
@@ -135,28 +137,34 @@ public class WordCount {
 
 		if (sort.compareTo("-is") == 0)
 		{
-			for (int i = 1; i < counts.length; i++) {
-				DataCount<E> x = counts[i];
-				int j;
-				for (j = i - 1; j >= 0; j--) {
-					if (counts[j] != null && x != null)
-					{
-						if (counts[j].count >= x.count) {
-							break;
-						}
-						counts[j + 1] = counts[j];
-					}
-				}
-				counts[j + 1] = x;
-			}
+			insertionSort(counts);
 		}
 		else if (sort.compareTo("-qs") == 0)
 		{
+			System.out.println("Quicksort");
 			quickSort(counts,0,counts.length-1);
 		}
 		else if (sort.compareTo("-ms") == 0)
 		{
-			mergeSort(counts);
+			//			mergeSort(counts, 0, counts.length-1,
+		}
+	}
+
+	private static <E extends Comparable<? super E>> void insertionSort(DataCount<E>[] counts)
+	{
+		for (int i = 1; i < counts.length; i++) {
+			DataCount<E> x = counts[i];
+			int j;
+			for (j = i - 1; j >= 0; j--) {
+				if (counts[j] != null && x != null)
+				{
+					if (counts[j].count >= x.count) {
+						break;
+					}
+					counts[j + 1] = counts[j];
+				}
+			}
+			counts[j + 1] = x;
 		}
 	}
 
@@ -202,29 +210,45 @@ public class WordCount {
 			// Pivot is the median
 			DataCount pivot = getMedian[1];
 			int pivotIndex = 0;
-			if (pivot == counts[low]) pivotIndex = low;
-			else if (pivot == counts[mid]) pivotIndex = mid;
+			if (pivot == counts[mid]) pivotIndex = mid;
+			else if (pivot == counts[low]) pivotIndex = low;
 			else if (pivot == counts[high]) pivotIndex = high;
+			
+			if (counts[pivotIndex].count != counts[low].count)
+			{
 			swap(counts, pivotIndex, low);
+			}
+			
 			left++;
 			while (left < right)
 			{
-				while ( counts[left].count > pivot.count )
+				while ( counts[left].count >= pivot.count && left < high)
 				{
-				left++;	
+					left++;	
 				}
-				while (counts[right].count < pivot.count )
+				while (counts[right].count < pivot.count && right > low)
 				{
 					right--;
 				}
-				if (left < right) swap(counts, right, left);
+				if (left < right && counts[left].count != counts[right].count) 
+				{
+					swap(counts, right, left);
+				}
 			}
+			if (counts[low].count != counts[left-1].count)
+			{
 			swap(counts, low, left-1);
-			
+			}
+
 			pivotIndex = left-1;
-			quickSort(counts, low, pivotIndex-1);
-			quickSort(counts, pivotIndex+1, high);
-			
+			if (low < pivotIndex-1)
+			{
+				quickSort(counts, low, pivotIndex-1);
+			}
+			if (high > pivotIndex+1)
+			{
+				quickSort(counts, pivotIndex+1, high);
+			}
 		}
 
 
@@ -235,11 +259,39 @@ public class WordCount {
 		DataCount temp = counts[a];
 		counts[a] = counts[b];
 		counts[b] = temp;
-		
+
 	}
 
-	private static <E extends Comparable<? super E>> void mergeSort(DataCount<E>[] counts) {
+	private static <E> void mergeSort(DataCount<E>[] dataCounts, Comparator<DataCount<E>> comparator) {
+		if(dataCounts.length > 1) {
+			int mid = dataCounts.length / 2;
+			DataCount<E>[] left = Arrays.copyOfRange(dataCounts, 0, mid);
+			DataCount<E>[] right = Arrays.copyOfRange(dataCounts, mid, dataCounts.length);
 
+			mergeSort(left, comparator);
+			mergeSort(right, comparator);
+			merge(dataCounts, left, right, comparator);
+		}
+	}
+
+
+	private static <E> void merge(DataCount<E>[] dataCounts,
+			DataCount<E>[] left, DataCount<E>[] right,
+			Comparator<DataCount<E>> comparator) {
+		int i = 0, j = 0;
+		for(int k = 0; k < dataCounts.length; k++) {
+			if(i < left.length && j < right.length) {
+				if(comparator.compare(left[i], right[j]) <= 0) {
+					dataCounts[k] = left[i++];
+				} else {
+					dataCounts[k] = right[j++];
+				}
+			} else if(i < left.length) {
+				dataCounts[k] = left[i++];
+			} else if(j < right.length) {
+				dataCounts[k] = right[j++];
+			}
+		}
 	}
 
 
@@ -253,17 +305,19 @@ public class WordCount {
 	 * Prints return statement for the desired computation
 	 */
 	public static void main(String[] args) {
+		System.out.println("dataStructure: " + args[0] + ", sortingMethod: " + args[1]);
 		WordCount wc = new WordCount(args[0], args[1]);
+
 		if (args[2].equals("-frequency"))
 		{
-			System.out.println("Using frequency");
-			System.out.println("File is " + args[3]);
+			//			System.out.println("Using frequency");
+			//			System.out.println("File is " + args[3]);
 			wc.countWords(args[3]);
 		}
 		else if (args[2].equals("-num_unique")) 
 		{
-			System.out.println("Using num_unique");
-			System.out.println("File is " + args[3]);
+			//			System.out.println("Using num_unique");
+			//			System.out.println("File is " + args[3]);
 			wc.numUnique(args[3]);
 		}
 	}
