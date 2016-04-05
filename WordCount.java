@@ -152,7 +152,7 @@ public class WordCount {
 		}
 		else if (sort.compareTo("-qs") == 0)
 		{
-			quickSort(counts);
+			quickSort(counts,0,counts.length-1);
 		}
 		else if (sort.compareTo("-ms") == 0)
 		{
@@ -160,10 +160,84 @@ public class WordCount {
 		}
 	}
 
-	private static <E extends Comparable<? super E>> void quickSort(DataCount<E>[] counts)
+	private static <E extends Comparable<? super E>> void quickSort(DataCount<E>[] counts, int low, int high) 
 	{
+		int left = low;
+		int right = high;
+
+		if (high-low == 1)
+		{
+			if (counts[low].count < counts[high].count)
+			{
+				swap(counts, low, high);
+			}
+		}
+
+		// If there are 3 or more elements
+		// Find median of low, mid, high
+		// Move pointers
+
+		else if ( left != right )
+		{
+			int mid = low + (high-low)/2;
+			DataCount[] getMedian = new DataCount[3];
+			getMedian[0] = counts[low];
+			getMedian[1] = counts[mid];
+			getMedian[2] = counts[high];
+			for (int i = 1; i < getMedian.length; i++) 
+			{
+				DataCount x = getMedian[i];
+				int j;
+				for (j = i - 1; j >= 0; j--) {
+					if (getMedian[j] != null && x != null)
+					{
+						if (getMedian[j].count >= x.count) {
+							break;
+						}
+						getMedian[j + 1] = getMedian[j];
+					}
+				}
+				getMedian[j + 1] = x;
+			}
+			// Pivot is the median
+			DataCount pivot = getMedian[1];
+			int pivotIndex = 0;
+			if (pivot == counts[low]) pivotIndex = low;
+			else if (pivot == counts[mid]) pivotIndex = mid;
+			else if (pivot == counts[high]) pivotIndex = high;
+			swap(counts, pivotIndex, low);
+			left++;
+			while (left < right)
+			{
+				while ( counts[left].count > pivot.count )
+				{
+				left++;	
+				}
+				while (counts[right].count < pivot.count )
+				{
+					right--;
+				}
+				if (left < right) swap(counts, right, left);
+			}
+			swap(counts, low, left-1);
+			
+			pivotIndex = left-1;
+			quickSort(counts, low, pivotIndex-1);
+			quickSort(counts, pivotIndex+1, high);
+			
+		}
+
 
 	}
+
+	public static <E> void swap (DataCount<E>[] counts, int a, int b)
+	{
+		DataCount temp = counts[a];
+		counts[a] = counts[b];
+		counts[b] = temp;
+		
+	}
+
 	private static <E extends Comparable<? super E>> void mergeSort(DataCount<E>[] counts) {
 
 	}
